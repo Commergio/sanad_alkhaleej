@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { Home, LayoutDashboard, Smartphone } from "lucide-react";
+import { Home, LayoutDashboard, Smartphone, Bike } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DemoNavProps {
-  current?: "landing" | "app" | "admin";
+  current?: "landing" | "app" | "admin" | "delivery";
   className?: string;
 }
 
 export function DemoNav({ current, className }: DemoNavProps) {
   const links = [
     { href: "/", label: "الرئيسية", icon: Home, key: "landing" as const },
-    { href: "/app", label: "تطبيق العميل", icon: Smartphone, key: "app" as const },
-    { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard, key: "admin" as const },
+    { href: "/app", label: "العميل", icon: Smartphone, key: "app" as const },
+    { href: "/admin", label: "الإدارة", icon: LayoutDashboard, key: "admin" as const },
+    { href: "/delivery", label: "المندوب", icon: Bike, key: "delivery" as const },
   ];
 
   return (
@@ -29,7 +30,7 @@ export function DemoNav({ current, className }: DemoNavProps) {
             key={link.key}
             href={link.href}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all",
               isActive
                 ? "bg-sky-500 text-white shadow-md"
                 : "text-slate-600 hover:bg-slate-50"

@@ -12,8 +12,12 @@ export type CategoryId =
 
 export type OrderStatus =
   | "new"
+  | "assigned"
+  | "accepted"
   | "preparing"
+  | "picked_up"
   | "out_for_delivery"
+  | "arrived"
   | "delivered"
   | "cancelled";
 
@@ -85,6 +89,17 @@ export interface DeliveryAgent {
   city: string;
   status: "available" | "busy" | "offline";
   activeOrders: number;
+  employeeId: string;
+  avatarColor: string;
+  isOnline: boolean;
+  rating: number;
+  totalOrders: number;
+  totalDistance: number;
+  avgDeliveryMinutes: number;
+  todayOrders: number;
+  todayDelivered: number;
+  username: string;
+  password: string;
 }
 
 export interface OrderItem {
@@ -101,6 +116,7 @@ export interface Order {
   customerId: string;
   customerName: string;
   customerType: CustomerType;
+  doctorName?: string;
   city: string;
   phone: string;
   address: string;
@@ -112,6 +128,9 @@ export interface Order {
   deliveryAgentName?: string;
   estimatedDelivery?: string;
   deliveryMethod: "standard" | "express";
+  distanceKm?: number;
+  etaMinutes?: number;
+  notes?: string;
 }
 
 export interface ClinicAddress {
@@ -120,4 +139,21 @@ export interface ClinicAddress {
   address: string;
   city: string;
   isDefault: boolean;
+}
+
+export type DriverNotificationType =
+  | "new_order"
+  | "address_changed"
+  | "customer_called"
+  | "order_cancelled"
+  | "order_delivered";
+
+export interface DriverNotification {
+  id: string;
+  type: DriverNotificationType;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  orderNumber?: string;
 }

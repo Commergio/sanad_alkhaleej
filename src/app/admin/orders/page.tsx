@@ -7,16 +7,8 @@ import { orderStatusLabels } from "@/data/mock";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Badge } from "@/components/ui/Badge";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { OrderStatus } from "@/types";
 import { Eye } from "lucide-react";
-
-const statusVariant: Record<OrderStatus, "info" | "warning" | "success" | "danger" | "default"> = {
-  new: "info",
-  preparing: "warning",
-  out_for_delivery: "default",
-  delivered: "success",
-  cancelled: "danger",
-};
+import { orderStatusVariant } from "@/lib/order-status";
 
 export default function AdminOrdersPage() {
   const { orders } = useOrders();
@@ -89,7 +81,7 @@ export default function AdminOrdersPage() {
                   <td className="p-4 text-slate-600">{order.city}</td>
                   <td className="p-4 font-medium">{formatPrice(order.total)}</td>
                   <td className="p-4">
-                    <Badge variant={statusVariant[order.status]}>
+                    <Badge variant={orderStatusVariant[order.status]}>
                       {orderStatusLabels[order.status]}
                     </Badge>
                   </td>

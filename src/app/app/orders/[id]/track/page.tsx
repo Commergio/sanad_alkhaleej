@@ -1,38 +1,32 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useOrders } from "@/context/OrdersContext";
-import { orderStatusLabels } from "@/data/mock";
+import { orderStatusLabels, deliveryTimelineSteps } from "@/data/mock";
 import { formatDate } from "@/lib/utils";
-import { OrderStatus } from "@/types";
 import {
   ArrowRight,
   CheckCircle2,
   Circle,
-  Package,
   Truck,
-  Home,
   Phone,
   MapPin,
   Clock,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
-const steps: { status: OrderStatus; label: string; icon: React.ElementType }[] = [
-  { status: "new", label: "تم استلام الطلب", icon: CheckCircle2 },
-  { status: "preparing", label: "جاري التجهيز", icon: Package },
-  { status: "out_for_delivery", label: "خرج للتوصيل", icon: Truck },
-  { status: "delivered", label: "تم التسليم", icon: Home },
-];
-
-const statusOrder: OrderStatus[] = [
-  "new",
-  "preparing",
-  "out_for_delivery",
-  "delivered",
-];
+const timelineIndex: Record<string, number> = {
+  new: 0,
+  assigned: 1,
+  accepted: 1,
+  preparing: 2,
+  picked_up: 3,
+  out_for_delivery: 4,
+  arrived: 5,
+  delivered: 6,
+};
 
 export default function OrderTrackingPage({
   params,
@@ -42,39 +36,19 @@ export default function OrderTrackingPage({
   const { id } = use(params);
   const { getOrder } = useOrders();
   const order = getOrder(id);
-  const [simulatedStatus, setSimulatedStatus] = useState<OrderStatus | null>(null);
-
-  useEffect(() => {
-    if (!order || order.status === "delivered" || order.status === "cancelled")
-      return;
-
-    const currentIdx = statusOrder.indexOf(order.status);
-    const timer = setInterval(() => {
-      setSimulatedStatus((prev) => {
-        const base = prev || order.status;
-        const idx = statusOrder.indexOf(base);
-        if (idx < statusOrder.length - 1) {
-          return statusOrder[idx + 1];
-        }
-        return base;
-      });
-    }, 8000);
-
-    return () => clearInterval(timer);
-  }, [order]);
 
   if (!order) notFound();
 
-  const displayStatus = simulatedStatus || order.status;
-  const currentStepIndex = statusOrder.indexOf(
-    displayStatus === "cancelled" ? "new" : displayStatus
-  );
+  const currentStepIndex =
+    order.status === "cancelled" ? 0 : (timelineIndex[order.status] ?? 0);
 
-  const agent = order.deliveryAgentName || "محمد الشهري";
+  const agent = order.deliveryAgentName || "مندوب التوصيل";
   const agentPhone = "0501112233";
   const eta = order.estimatedDelivery
     ? formatDate(order.estimatedDelivery)
-    : "خلال ساعتين";
+    : order.etaMinutes
+      ? `خلال ${order.etaMinutes} دقيقة`
+      : "خلال ساعتين";
 
   return (
     <div className="animate-fade-in min-h-screen bg-slate-50">
@@ -90,7 +64,6 @@ export default function OrderTrackingPage({
         <p className="font-mono text-sky-600 text-sm mt-1">{order.orderNumber}</p>
       </div>
 
-      {/* Map placeholder */}
       <div className="relative h-48 bg-gradient-to-br from-sky-100 via-teal-50 to-emerald-50 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full" viewBox="0 0 400 200">
@@ -131,7 +104,6 @@ export default function OrderTrackingPage({
         </div>
       </div>
 
-      {/* ETA */}
       <div className="p-4">
         <Card className="p-4 mb-4">
           <div className="flex items-center gap-3">
@@ -147,14 +119,14 @@ export default function OrderTrackingPage({
           </div>
         </Card>
 
-        {/* Steps */}
         <Card className="p-4">
           <h3 className="font-bold text-slate-800 mb-4">حالة الطلب</h3>
           <div className="space-y-0">
-            {steps.map((step, index) => {
-              const Icon = step.icon;
-              const isCompleted = index <= currentStepIndex;
-              const isCurrent = index === currentStepIndex;
+            {deliveryTimelineSteps.map((step, index) => {
+              const isCompleted =
+                index <= currentStepIndex && order.status !== "cancelled";
+              const isCurrent =
+                index === currentStepIndex && order.status !== "cancelled";
 
               return (
                 <div key={step.status} className="flex gap-3">
@@ -167,20 +139,20 @@ export default function OrderTrackingPage({
                       } ${isCurrent ? "ring-4 ring-sky-100" : ""}`}
                     >
                       {isCompleted ? (
-                        <Icon className="w-4 h-4" />
+                        <CheckCircle2 className="w-4 h-4" />
                       ) : (
                         <Circle className="w-4 h-4" />
                       )}
                     </div>
-                    {index < steps.length - 1 && (
+                    {index < deliveryTimelineSteps.length - 1 && (
                       <div
-                        className={`w-0.5 h-10 ${
+                        className={`w-0.5 h-8 ${
                           index < currentStepIndex ? "bg-sky-500" : "bg-slate-200"
                         }`}
                       />
                     )}
                   </div>
-                  <div className="pb-8">
+                  <div className="pb-6">
                     <p
                       className={`font-semibold text-sm ${
                         isCompleted ? "text-slate-800" : "text-slate-400"
@@ -190,7 +162,7 @@ export default function OrderTrackingPage({
                     </p>
                     {isCurrent && (
                       <p className="text-xs text-sky-600 mt-0.5 animate-pulse-soft">
-                        {orderStatusLabels[displayStatus]}
+                        {orderStatusLabels[order.status]}
                       </p>
                     )}
                   </div>

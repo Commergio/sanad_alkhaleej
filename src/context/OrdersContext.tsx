@@ -13,10 +13,13 @@ import { generateOrderNumber } from "@/lib/utils";
 
 interface OrdersContextType {
   orders: Order[];
-  addOrder: (order: Omit<Order, "id" | "orderNumber" | "createdAt" | "status">) => Order;
+  addOrder: (
+    order: Omit<Order, "id" | "orderNumber" | "createdAt" | "status">
+  ) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   assignAgent: (orderId: string, agentId: string, agentName: string) => void;
   getOrder: (id: string) => Order | undefined;
+  getOrdersByAgent: (agentId: string) => Order[];
 }
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
@@ -39,18 +42,28 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
-  }, []);
+  const updateOrderStatus = useCallback(
+    (orderId: string, status: OrderStatus) => {
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId || o.orderNumber === orderId ? { ...o, status } : o
+        )
+      );
+    },
+    []
+  );
 
   const assignAgent = useCallback(
     (orderId: string, agentId: string, agentName: string) => {
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === orderId
-            ? { ...o, deliveryAgentId: agentId, deliveryAgentName: agentName }
+          o.id === orderId || o.orderNumber === orderId
+            ? {
+                ...o,
+                deliveryAgentId: agentId,
+                deliveryAgentName: agentName,
+                status: "assigned",
+              }
             : o
         )
       );
@@ -63,9 +76,21 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     [orders]
   );
 
+  const getOrdersByAgent = useCallback(
+    (agentId: string) => orders.filter((o) => o.deliveryAgentId === agentId),
+    [orders]
+  );
+
   return (
     <OrdersContext.Provider
-      value={{ orders, addOrder, updateOrderStatus, assignAgent, getOrder }}
+      value={{
+        orders,
+        addOrder,
+        updateOrderStatus,
+        assignAgent,
+        getOrder,
+        getOrdersByAgent,
+      }}
     >
       {children}
     </OrdersContext.Provider>

@@ -7,15 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { ClipboardList, ChevronLeft, MapPin } from "lucide-react";
-import { OrderStatus } from "@/types";
-
-const statusVariant: Record<OrderStatus, "info" | "warning" | "success" | "danger" | "default"> = {
-  new: "info",
-  preparing: "warning",
-  out_for_delivery: "default",
-  delivered: "success",
-  cancelled: "danger",
-};
+import { orderStatusVariant } from "@/lib/order-status";
 
 export default function OrdersPage() {
   const { orders } = useOrders();
@@ -49,7 +41,7 @@ export default function OrdersPage() {
                 <span className="font-mono font-bold text-sky-600 text-sm">
                   {order.orderNumber}
                 </span>
-                <Badge variant={statusVariant[order.status]}>
+                <Badge variant={orderStatusVariant[order.status]}>
                   {orderStatusLabels[order.status]}
                 </Badge>
               </div>

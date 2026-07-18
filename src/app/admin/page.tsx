@@ -32,15 +32,7 @@ import {
   Cell,
 } from "recharts";
 import Link from "next/link";
-import { OrderStatus } from "@/types";
-
-const statusVariant: Record<OrderStatus, "info" | "warning" | "success" | "danger" | "default"> = {
-  new: "info",
-  preparing: "warning",
-  out_for_delivery: "default",
-  delivered: "success",
-  cancelled: "danger",
-};
+import { orderStatusVariant } from "@/lib/order-status";
 
 export default function AdminDashboard() {
   const { orders } = useOrders();
@@ -200,7 +192,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="py-3 text-slate-700">{order.customerName}</td>
                     <td className="py-3">
-                      <Badge variant={statusVariant[order.status]} className="text-[10px]">
+                      <Badge variant={orderStatusVariant[order.status]} className="text-[10px]">
                         {orderStatusLabels[order.status]}
                       </Badge>
                     </td>
